@@ -9,7 +9,8 @@ public class GridSystem : MonoBehaviour
     public GameObject hexagonPrefab;
     public GameObject selectPrefab;
 
-    private GameObject currentlySelected = null;
+    [HideInInspector]
+    public GameObject currentlySelected = null;
 
     public List<GameObject> hexagonGrid = new();
 
