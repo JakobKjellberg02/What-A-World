@@ -9,44 +9,46 @@ public class GridSystem : MonoBehaviour
     public GameObject hexagonPrefab;
     public GameObject selectPrefab;
 
+    public int gridRadius = 3;
+
     [HideInInspector]
     public GameObject currentlySelected = null;
 
+    [HideInInspector]
     public List<GameObject> hexagonGrid = new();
 
     private GameObject selectionMarker;
-    private Vector3 CalculationOfPosition(int x, int z)
+    private Vector3 CalculationOfPosition(int q, int r)
     {
-        float width = (float)Math.Sqrt(3);
-        float height = 3.0f / 2.0f;
-
-        if (z % 2 == 1)
-        {
-            return new Vector3(x * width + (width / 2), 0.0f, z * height);
-        }
-        else
-        {
-            return new Vector3(x * width, 0.0f, z * height);
-        }
+        float size = 1.0f; 
+        float x = size * (Mathf.Sqrt(3f) * q + Mathf.Sqrt(3f) / 2f * r);
+        float z = size * (3f / 2f * r);
+        return new Vector3(x, 0, z);
     }
 
     void Start()
     {
-        for (int x = 0; x < 16; x++)
+        for (int q = -gridRadius; q < gridRadius + 1; q++)
         {
-            for (int z = 0; z < 16; z++)
+            for (int r = -gridRadius; r < gridRadius + 1; r++)
             {
-                GameObject hexagon = Instantiate(hexagonPrefab);
-                hexagon.transform.position = CalculationOfPosition(x, z);
-                if (z % 2 == 1)
+                int s = -q - r;
+                if (s <= gridRadius && -gridRadius <= s)
                 {
-                    hexagon.GetComponent<Renderer>().material.SetColor("_BaseColor", Color.blue);
+                    GameObject hexagon = Instantiate(hexagonPrefab);
+                    hexagon.transform.position = CalculationOfPosition(q, r);
+                    if (q % 2 == 1)
+                    {
+                        hexagon.GetComponent<Renderer>().material.SetColor("_BaseColor", Color.blue);
+                    }
+                    else
+                    {
+                        hexagon.GetComponent<Renderer>().material.SetColor("_BaseColor", Color.red);
+                    }
+                    hexagon.GetComponent<HexAttributes>().q = q;
+                    hexagon.GetComponent<HexAttributes>().r = r;
+                    hexagonGrid.Add(hexagon);
                 }
-                else
-                {
-                    hexagon.GetComponent<Renderer>().material.SetColor("_BaseColor", Color.red);
-                }
-                hexagonGrid.Add(hexagon);
             }
         }
     }
