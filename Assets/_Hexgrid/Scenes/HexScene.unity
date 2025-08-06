@@ -149,8 +149,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hexagonPrefab: {fileID: 3743417630350995274, guid: f77ee5ebf169a12608fcaa0113b3e52f, type: 3}
-  selectPrefab: {fileID: 5409783216025099824, guid: 96a097b3b1e3d5c4cb5ee5d839bdb4e3, type: 3}
-  gridRadius: 4
+  gridRadius: 8
+  noiseScale: 0.3
+  terrainGradient:
+    serializedVersion: 2
+    key0: {r: 0.21333212, g: 0.3517535, b: 0.8867924, a: 1}
+    key1: {r: 0.20784312, g: 0.798181, b: 0.8666667, a: 1}
+    key2: {r: 0.28740957, g: 0.8065326, b: 0.78632486, a: 0}
+    key3: {r: 0.8603087, g: 0.8666667, b: 0.20784312, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 34695
+    ctime2: 37586
+    ctime3: 50501
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 4
+    m_NumAlphaKeys: 2
 --- !u!4 &513976195
 Transform:
   m_ObjectHideFlags: 0

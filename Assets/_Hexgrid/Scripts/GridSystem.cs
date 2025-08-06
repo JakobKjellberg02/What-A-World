@@ -19,7 +19,7 @@ public class GridSystem : MonoBehaviour
     [SerializeField]
     private float noiseScale = 0.3f;
     [SerializeField]
-    private Gradient terrainGradient; 
+    private List<TerrainObject> terrainTypes;
 
     private float seedOffsetX;
     private float seedOffsetY;
@@ -33,16 +33,6 @@ public class GridSystem : MonoBehaviour
         float z = size * (3f / 2f * r);
         return new Vector3(x, 0, z);
     }
-
-    private readonly Vector2Int[] hexDirections = new Vector2Int[]
-    {
-        new(1, 0),   
-        new(1, -1),   
-        new(0, -1),  
-        new(-1, 0),  
-        new(-1, 1),  
-        new(0, 1)    
-    };
 
     void Start()
     {
@@ -58,14 +48,75 @@ public class GridSystem : MonoBehaviour
                     GameObject hexagon = Instantiate(hexagonPrefab);
                     hexagon.transform.position = CalculationOfPosition(q, r);
                     float noise = Mathf.PerlinNoise((q + seedOffsetX) * noiseScale, (r + seedOffsetY) * noiseScale);
-                    Color terrainColor = terrainGradient.Evaluate(noise);
-                    hexagon.GetComponent<Renderer>().material.SetColor("_BaseColor", terrainColor);
+                    TerrainObject terrain = GetTerrainByNoise(noise);
+                    Color color = terrain.terrainGradient.Evaluate(noise);
+                    hexagon.GetComponent<Renderer>().material.SetColor("_BaseColor", color);
                     hexagon.GetComponent<HexAttributes>().Q = q;
                     hexagon.GetComponent<HexAttributes>().R = r;
-                    hexagonGrid.Add(new HexStructure(hexagon, q, r));
+                    HexStructure newHexStruct = new(hexagon, new Hex(q, r));
+                    if (terrain.passable == true)
+                    {
+                        newHexStruct.passable = true;
+                    }
+                    hexagonGrid.Add(newHexStruct);
                 }
             }
         }
+    }
+
+    public void Breadth_First_Search(Hex start)
+    {
+        foreach (GameObject neighbor in activeNeighborMarkers)
+        {
+            neighbor.transform.GetChild(0).gameObject.SetActive(false);
+        }
+        activeNeighborMarkers.Clear();
+        Queue<Hex> frontier = new();
+        frontier.Enqueue(start);
+
+        HashSet<Vector2Int> reached = new()
+        {
+            start.GetAxialCoordinates()
+        };
+
+        while (frontier.Count > 0)
+        {
+            Hex current = frontier.Dequeue();
+
+            for (int i = 0; i < 6; i++)
+            {
+                Hex potential = HexHelperFunctions.Hex_Neighbors(current, i);
+                Vector2Int neighborCoords = potential.GetAxialCoordinates();
+                if (reached.Contains(neighborCoords))
+                {
+                    continue;
+                }
+                HexStructure neighbor = hexagonGrid.Find(h => h.Q == neighborCoords.x && h.R == neighborCoords.y);
+                if (neighbor != null && neighbor.passable)
+                {
+                    GameObject canidateGameObject = neighbor.hexView;
+                    canidateGameObject.transform.GetChild(0).gameObject.SetActive(true);
+                    activeNeighborMarkers.Add(canidateGameObject);
+
+                    frontier.Enqueue(neighbor.hexData);
+                    reached.Add(neighborCoords);
+                }
+            }
+        }
+    }
+
+    private TerrainObject GetTerrainByNoise(float noise)
+    {
+        foreach (var terrain in terrainTypes)
+        {
+            if (noise >= terrain.minimumNoise && noise <= terrain.maximumNoise)
+            {
+                return terrain;
+            }
+        }
+
+        Debug.LogWarning("No terrain matched noise value. Returning default.");
+        return terrainTypes[0]; 
     }
 
     void Update()
@@ -76,35 +127,13 @@ public class GridSystem : MonoBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 GameObject clickedHex = hit.collider.gameObject;
-                SelectHex(clickedHex);
+                if (clickedHex.TryGetComponent<HexAttributes>(out var hexAttr))
+                {
+                    Hex startHex = new(hexAttr.Q, hexAttr.R);
+                    Breadth_First_Search(startHex);
+                }
             }
         }
     }
-
-    private void SelectHex(GameObject newSelection)
-    {
-        foreach (GameObject neighbor in activeNeighborMarkers)
-        {
-            neighbor.transform.GetChild(0).gameObject.SetActive(false);
-        }
-        activeNeighborMarkers.Clear();
-        int selectedQ = newSelection.GetComponent<HexAttributes>().Q;
-        int selectedR = newSelection.GetComponent<HexAttributes>().R;
-
-        foreach (Vector2Int direction in hexDirections)
-        {
-            int neighborQ = selectedQ + direction.x;
-            int neighborR = selectedR + direction.y;
-            HexStructure candidate = hexagonGrid.Find(x => x.q == neighborQ && x.r == neighborR);
-            if (candidate != null)
-            {
-                GameObject canidateGameObject = candidate.hexGameObject;
-                canidateGameObject.transform.GetChild(0).gameObject.SetActive(true);
-                activeNeighborMarkers.Add(canidateGameObject);
-            }
-        }
-
-    }
-
 
 }

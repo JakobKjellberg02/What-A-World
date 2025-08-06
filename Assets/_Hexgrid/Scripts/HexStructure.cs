@@ -1,15 +1,19 @@
 using UnityEngine;
 
-class HexStructure
+public class HexStructure
 {
-    public GameObject hexGameObject;
-    public int q;
-    public int r;
+    public GameObject hexView;
+    public Hex hexData;
 
-    public HexStructure(GameObject hexGameObject, int q, int r)
+    public int Q => hexData.Q;
+    public int R => hexData.R;
+
+    public bool passable = false;
+
+    public HexStructure(GameObject hexView, Hex hexData)
     {
-        this.hexGameObject = hexGameObject;
-        this.q = q;
-        this.r = r;
+        this.hexView = hexView;
+        this.hexData = hexData;
     }
+
 }
