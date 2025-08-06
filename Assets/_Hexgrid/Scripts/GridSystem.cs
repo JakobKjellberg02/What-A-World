@@ -24,7 +24,8 @@ public class GridSystem : MonoBehaviour
     private float seedOffsetX;
     private float seedOffsetY;
 
-    private GameObject selectionMarker;
+    private List<GameObject> activeNeighborMarkers = new();
+
     private Vector3 CalculationOfPosition(int q, int r)
     {
         float size = 1.0f;
@@ -82,27 +83,27 @@ public class GridSystem : MonoBehaviour
 
     private void SelectHex(GameObject newSelection)
     {
-        if (selectionMarker == null)
+        foreach (GameObject neighbor in activeNeighborMarkers)
         {
-            int selectedQ = newSelection.GetComponent<HexAttributes>().Q;
-            int selectedR = newSelection.GetComponent<HexAttributes>().R;
+            neighbor.transform.GetChild(0).gameObject.SetActive(false);
+        }
+        activeNeighborMarkers.Clear();
+        int selectedQ = newSelection.GetComponent<HexAttributes>().Q;
+        int selectedR = newSelection.GetComponent<HexAttributes>().R;
 
-            foreach (Vector2Int direction in hexDirections)
+        foreach (Vector2Int direction in hexDirections)
+        {
+            int neighborQ = selectedQ + direction.x;
+            int neighborR = selectedR + direction.y;
+            HexStructure candidate = hexagonGrid.Find(x => x.q == neighborQ && x.r == neighborR);
+            if (candidate != null)
             {
-                int neighborQ = selectedQ + direction.x;
-                int neighborR = selectedR + direction.y;
-                HexStructure candidate = hexagonGrid.Find(x => x.q == neighborQ && x.r == neighborR);
-                if (candidate != null)
-                {
-                    GameObject canidateGameObject = candidate.hexGameObject;
-                    canidateGameObject.transform.GetChild(0).gameObject.SetActive(true);
-                }
+                GameObject canidateGameObject = candidate.hexGameObject;
+                canidateGameObject.transform.GetChild(0).gameObject.SetActive(true);
+                activeNeighborMarkers.Add(canidateGameObject);
             }
         }
-        else
-        {
-            selectionMarker.transform.position = newSelection.transform.position;
-        }
+
     }
 
 
