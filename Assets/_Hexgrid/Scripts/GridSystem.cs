@@ -9,13 +9,20 @@ public class GridSystem : MonoBehaviour
 {
     // References
     public GameObject hexagonPrefab;
-    public GameObject selectPrefab;
 
     [SerializeField]
     private int gridRadius = 3;
 
     [SerializeField]
     private List<HexStructure> hexagonGrid = new();
+
+    [SerializeField]
+    private float noiseScale = 0.3f;
+    [SerializeField]
+    private Gradient terrainGradient; 
+
+    private float seedOffsetX;
+    private float seedOffsetY;
 
     private GameObject selectionMarker;
     private Vector3 CalculationOfPosition(int q, int r)
@@ -38,6 +45,8 @@ public class GridSystem : MonoBehaviour
 
     void Start()
     {
+        seedOffsetX = UnityEngine.Random.Range(0f, 1000f);
+        seedOffsetY = UnityEngine.Random.Range(0f, 1000f);
         for (int q = -gridRadius; q < gridRadius + 1; q++)
         {
             for (int r = -gridRadius; r < gridRadius + 1; r++)
@@ -47,7 +56,9 @@ public class GridSystem : MonoBehaviour
                 {
                     GameObject hexagon = Instantiate(hexagonPrefab);
                     hexagon.transform.position = CalculationOfPosition(q, r);
-                    hexagon.GetComponent<Renderer>().material.SetColor("_BaseColor", Color.blue);
+                    float noise = Mathf.PerlinNoise((q + seedOffsetX) * noiseScale, (r + seedOffsetY) * noiseScale);
+                    Color terrainColor = terrainGradient.Evaluate(noise);
+                    hexagon.GetComponent<Renderer>().material.SetColor("_BaseColor", terrainColor);
                     hexagon.GetComponent<HexAttributes>().Q = q;
                     hexagon.GetComponent<HexAttributes>().R = r;
                     hexagonGrid.Add(new HexStructure(hexagon, q, r));
@@ -73,7 +84,6 @@ public class GridSystem : MonoBehaviour
     {
         if (selectionMarker == null)
         {
-            selectionMarker = Instantiate(selectPrefab, newSelection.transform.position, Quaternion.Euler(-90, 0, 0));
             int selectedQ = newSelection.GetComponent<HexAttributes>().Q;
             int selectedR = newSelection.GetComponent<HexAttributes>().R;
 
@@ -85,7 +95,7 @@ public class GridSystem : MonoBehaviour
                 if (candidate != null)
                 {
                     GameObject canidateGameObject = candidate.hexGameObject;
-                    canidateGameObject.GetComponent<Renderer>().material.SetColor("_BaseColor", Color.red);
+                    canidateGameObject.transform.GetChild(0).gameObject.SetActive(true);
                 }
             }
         }
