@@ -9,7 +9,7 @@ public class Boat : MonoBehaviour
     private float movementSpeed = 1.5f;
 
     private Queue<Vector3> path = new();
-    private bool isMoving = false;
+    public bool isMoving = false;
 
     public void movementOfBoat(List<Hex> pathOfHexes, GridSystem gridSystem)
     {

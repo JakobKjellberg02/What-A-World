@@ -175,12 +175,16 @@ public class GridSystem : MonoBehaviour
                     if (targetStruct != null && targetStruct.passable && boatInstance != null)
                     {
                         Boat boat = boatInstance.GetComponent<Boat>();
-                        List<Hex> path = FindPathForBoat(boat.currentHex, targetHex);
-                        if (path != null)
+                        List<Hex> path = null;
+                        if (!boat.isMoving)
                         {
-                            boat.movementOfBoat(path, this);
-                            boat.currentHex = targetHex;
+                            path = FindPathForBoat(boat.currentHex, targetHex);
                         }
+                        if (path != null)
+                            {
+                                boat.movementOfBoat(path, this);
+                                boat.currentHex = targetHex;
+                            }
                     }
                 }
             }
