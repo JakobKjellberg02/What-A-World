@@ -149,38 +149,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hexagonPrefab: {fileID: 3743417630350995274, guid: f77ee5ebf169a12608fcaa0113b3e52f, type: 3}
-  gridRadius: 8
+  boatPrefab: {fileID: 643457635685150377, guid: 893c4169a7d8bc7ca8c381b5bb36a7e7, type: 3}
+  gridRadius: 14
   noiseScale: 0.3
-  terrainGradient:
-    serializedVersion: 2
-    key0: {r: 0.21333212, g: 0.3517535, b: 0.8867924, a: 1}
-    key1: {r: 0.20784312, g: 0.798181, b: 0.8666667, a: 1}
-    key2: {r: 0.28740957, g: 0.8065326, b: 0.78632486, a: 0}
-    key3: {r: 0.8603087, g: 0.8666667, b: 0.20784312, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 34695
-    ctime2: 37586
-    ctime3: 50501
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: -1
-    m_NumColorKeys: 4
-    m_NumAlphaKeys: 2
+  terrainTypes:
+  - {fileID: 11400000, guid: 62f70b6f9f68ed482b172e782a955c84, type: 2}
+  - {fileID: 11400000, guid: 3757636cd95bbb083b94007457274eeb, type: 2}
+  - {fileID: 11400000, guid: d508ada2a4dc238fcabd57cb52fb0ec1, type: 2}
 --- !u!4 &513976195
 Transform:
   m_ObjectHideFlags: 0

@@ -10,6 +10,9 @@ public class GridSystem : MonoBehaviour
     // References
     public GameObject hexagonPrefab;
 
+    public GameObject boatPrefab;
+    private GameObject boatInstance;
+
     [SerializeField]
     private int gridRadius = 3;
 
@@ -24,8 +27,8 @@ public class GridSystem : MonoBehaviour
     private float seedOffsetX;
     private float seedOffsetY;
 
-    private List<GameObject> activeNeighborMarkers = new();
-
+    private readonly List<GameObject> activeNeighborMarkers = new();
+  
     private Vector3 CalculationOfPosition(int q, int r)
     {
         float size = 1.0f;
@@ -62,47 +65,80 @@ public class GridSystem : MonoBehaviour
                 }
             }
         }
+        HexStructure spawnTile = hexagonGrid.Find(h => h.passable); 
+        if (spawnTile != null)
+        {
+            boatInstance = Instantiate(boatPrefab);
+            boatInstance.transform.position = spawnTile.hexView.transform.position;
+            boatInstance.GetComponent<Boat>().currentHex = spawnTile.hexData;
+        }
     }
 
-    public void Breadth_First_Search(Hex start)
+    public List<Hex> FindPathForBoat(Hex start, Hex end)
     {
         foreach (GameObject neighbor in activeNeighborMarkers)
         {
             neighbor.transform.GetChild(0).gameObject.SetActive(false);
         }
         activeNeighborMarkers.Clear();
+
         Queue<Hex> frontier = new();
         frontier.Enqueue(start);
 
-        HashSet<Vector2Int> reached = new()
+        Dictionary<Vector2Int, Vector2Int?> cameFrom = new()
         {
-            start.GetAxialCoordinates()
+            [start.GetAxialCoordinates()] = null
         };
 
         while (frontier.Count > 0)
         {
             Hex current = frontier.Dequeue();
+            Vector2Int currentCoords = current.GetAxialCoordinates();
+
+            if (currentCoords == end.GetAxialCoordinates())
+            {
+                break;
+            }
 
             for (int i = 0; i < 6; i++)
             {
                 Hex potential = HexHelperFunctions.Hex_Neighbors(current, i);
                 Vector2Int neighborCoords = potential.GetAxialCoordinates();
-                if (reached.Contains(neighborCoords))
+                if (cameFrom.ContainsKey(neighborCoords))
                 {
                     continue;
                 }
                 HexStructure neighbor = hexagonGrid.Find(h => h.Q == neighborCoords.x && h.R == neighborCoords.y);
                 if (neighbor != null && neighbor.passable)
                 {
-                    GameObject canidateGameObject = neighbor.hexView;
-                    canidateGameObject.transform.GetChild(0).gameObject.SetActive(true);
-                    activeNeighborMarkers.Add(canidateGameObject);
-
                     frontier.Enqueue(neighbor.hexData);
-                    reached.Add(neighborCoords);
+                    cameFrom[neighborCoords] = currentCoords;
                 }
             }
         }
+
+        List<Hex> path = new();
+        Vector2Int currentStep = end.GetAxialCoordinates();
+        if (!cameFrom.ContainsKey(currentStep))
+        {
+            return null;
+        }
+
+        while (currentStep != start.GetAxialCoordinates())
+        {
+            path.Add(new Hex(currentStep.x, currentStep.y));
+            HexStructure stepStruct = hexagonGrid.Find(h => h.Q == currentStep.x && h.R == currentStep.y);
+            if (stepStruct != null)
+            {
+                GameObject marker = stepStruct.hexView;
+                marker.transform.GetChild(0).gameObject.SetActive(true);
+                activeNeighborMarkers.Add(marker);
+            }
+            currentStep = cameFrom[currentStep].Value;
+        }
+
+        path.Reverse();
+        return path;
     }
 
     private TerrainObject GetTerrainByNoise(float noise)
@@ -112,11 +148,14 @@ public class GridSystem : MonoBehaviour
             if (noise >= terrain.minimumNoise && noise <= terrain.maximumNoise)
             {
                 return terrain;
-            }
+            }    
         }
+        return terrainTypes[0];
+    }
 
-        Debug.LogWarning("No terrain matched noise value. Returning default.");
-        return terrainTypes[0]; 
+    public HexStructure GetHexStructure(Hex hex)
+    {
+        return hexagonGrid.Find(h => h.Q == hex.Q && h.R == hex.R);
     }
 
     void Update()
@@ -129,11 +168,23 @@ public class GridSystem : MonoBehaviour
                 GameObject clickedHex = hit.collider.gameObject;
                 if (clickedHex.TryGetComponent<HexAttributes>(out var hexAttr))
                 {
-                    Hex startHex = new(hexAttr.Q, hexAttr.R);
-                    Breadth_First_Search(startHex);
+                    Vector2Int coords = new(hexAttr.Q, hexAttr.R);
+                    Hex targetHex = new(coords.x, coords.y);
+                    HexStructure targetStruct = GetHexStructure(targetHex);
+
+                    if (targetStruct != null && targetStruct.passable && boatInstance != null)
+                    {
+                        Boat boat = boatInstance.GetComponent<Boat>();
+                        List<Hex> path = FindPathForBoat(boat.currentHex, targetHex);
+                        if (path != null)
+                        {
+                            boat.movementOfBoat(path, this);
+                            boat.currentHex = targetHex;
+                        }
+                    }
                 }
             }
         }
     }
-
 }
+
